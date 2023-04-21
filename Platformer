@@ -1,0 +1,17 @@
+import pygame
+from sys import exit
+#Must call before running pygame code, it initializes pygame
+pygame.init() 
+
+
+#creating the display surface
+screen = pygame.display.set_mode((800, 400))
+
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quite
+            exit()
+    #draw all the elements
+    #update everything
+    pygame.display.update()
