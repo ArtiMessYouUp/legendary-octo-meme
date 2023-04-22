@@ -3,16 +3,78 @@ from sys import exit
 #Must call before running pygame code, it initializes pygame
 pygame.init() 
 
-
+    
 #creating the display surface
 screen = pygame.display.set_mode((800, 400))
+pygame.display.set_caption('Runner')
+clock = pygame.time.Clock()
+title_font = pygame.font.Font('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/Font/pixle-font-collection/ugly-byte-53757/ugly.otf', 50)
+score_font = pygame.font.Font('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/Font/pixle-font-collection/ugly-byte-53757/ugly.otf', 30)
+
+#initializing surfaces
+back_surf = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphics_mushroomLand/Backgrounds/bg_desert.png')
+ground_surf = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/Graphics/ground.png')
+text_surf = title_font.render('Run Forest Run', False, 'Black')
+score_surf = score_font.render('score', False, 'Black')
+
+# Enemy sprite
+snail_surf = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphicsDeluxe_Updated/Enemies/snailWalk1.png')
+snail_rect = snail_surf.get_rect(midbottom = (600 ,299))
+
+
+#player sprite
+player_surf = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphicsDeluxe_Updated/Player/p1_stand.png')
+player_rect = player_surf.get_rect(midbottom = (80, 299))
+score_rect = score_surf.get_rect(topleft = (20, 10))
+
+#player gravity
+player_gravity = 0
 
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quite
             exit()
+        #jump mechanic
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if player_rect.collidepoint(event.pos):
+               player_gravity = -20
+        
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE and player_rect.bottom >= 300 :
+                player_gravity = -20
+                
     #draw all the elements
     #update everything
-    pygame.display.update()
+    screen.blit(back_surf, (0,0))
+    screen.blit(ground_surf, (0,300))
+    screen.blit(text_surf, (300, 30)) 
+    screen.blit(score_surf, score_rect)
+    screen.blit(snail_surf, snail_rect)
+    
+    #PLAYER
+    screen.blit(player_surf, player_rect)
+    #gravity mechanic
+    player_gravity += 1
+    player_rect.y += player_gravity
+    if player_rect.bottom > 300:
+        player_rect.bottom = 300
+    #out of bounds mechanic
+    if player_rect.x > 850:
+        player_rect.x = -100
+    #player_rect.x += 5
+    
+    #ENEMY1
+    screen.blit(snail_surf, snail_rect)
+    #enemy movement 
+    snail_rect.x -= 4
+    if snail_rect.x < -100:
+        snail_rect.x = 850
+    
+        
   
+        
+    
+    pygame.display.update()
+    clock.tick(60)
+    
