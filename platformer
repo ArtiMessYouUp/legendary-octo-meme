@@ -1,32 +1,46 @@
 import pygame
 from sys import exit
+
+def display_score():
+    current_time = int(pygame.time.get_ticks()/1000) - start_time
+    score_surf = score_font.render(f' {current_time}.', False, 'Black')
+    score_rect = score_surf.get_rect(topleft = (20, 10))
+    screen.blit(score_surf, score_rect)
+    
+
 #Must call before running pygame code, it initializes pygame
 pygame.init() 
-
-    
 #creating the display surface
 screen = pygame.display.set_mode((800, 400))
 pygame.display.set_caption('Runner')
 clock = pygame.time.Clock()
 title_font = pygame.font.Font('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/Font/pixle-font-collection/ugly-byte-53757/ugly.otf', 50)
 score_font = pygame.font.Font('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/Font/pixle-font-collection/ugly-byte-53757/ugly.otf', 30)
+game_active = False
+start_time = 0
 
 #initializing surfaces
-back_surf = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphics_mushroomLand/Backgrounds/bg_desert.png')
-ground_surf = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/Graphics/ground.png')
+back_surf = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphics_mushroomLand/Backgrounds/bg_desert.png').convert()
+ground_surf = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/Graphics/ground.png').convert()
 text_surf = title_font.render('Run Forest Run', False, 'Black')
-score_surf = score_font.render('score', False, 'Black')
+end_game_text = score_font.render('Hit Spacebar to Restart', False, 'Black')
+end_score_text = score_font.render('Your score ', False, 'Black')
+
 
 # Enemy sprite
-snail_surf = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphicsDeluxe_Updated/Enemies/snailWalk1.png')
+snail_surf = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphicsDeluxe_Updated/Enemies/snailWalk1.png').convert_alpha()
 snail_rect = snail_surf.get_rect(midbottom = (600 ,299))
 
 
 #player sprite
-player_surf = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphicsDeluxe_Updated/Player/p1_stand.png')
+player_surf = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphicsDeluxe_Updated/Player/p1_stand.png').convert_alpha()
 player_rect = player_surf.get_rect(midbottom = (80, 299))
-score_rect = score_surf.get_rect(topleft = (20, 10))
-
+#end screen
+player_end_surf = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphicsDeluxe_Updated/Player/p2_front.png').convert_alpha()
+player_end = pygame.transform.rotozoom(player_end_surf, 0, 2)
+player_end_rect = player_end.get_rect(center = (400,200))
+end_game_rect = end_game_text.get_rect(center = (400, 370))
+end_score_rect = end_score_text.get_rect(center = (400, 330))
 #player gravity
 player_gravity = 0
 
@@ -36,45 +50,57 @@ while True:
             pygame.quite
             exit()
         #jump mechanic
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if player_rect.collidepoint(event.pos):
-               player_gravity = -20
-        
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE and player_rect.bottom >= 300 :
-                player_gravity = -20
-                
+        if game_active:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if player_rect.collidepoint(event.pos) and player_rect.bottom >= 300:
+                    player_gravity = -20
+            
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE and player_rect.bottom >= 300:
+                    player_gravity = -20
+        else:
+            if event.type == pygame.KEYDOWN and  event.key == pygame.K_SPACE:
+                game_active = True
+                snail_rect.left = 800 
+                start_time = int(pygame.time.get_ticks()/1000) - start_time
     #draw all the elements
     #update everything
-    screen.blit(back_surf, (0,0))
-    screen.blit(ground_surf, (0,300))
-    screen.blit(text_surf, (300, 30)) 
-    screen.blit(score_surf, score_rect)
-    screen.blit(snail_surf, snail_rect)
-    
-    #PLAYER
-    screen.blit(player_surf, player_rect)
-    #gravity mechanic
-    player_gravity += 1
-    player_rect.y += player_gravity
-    if player_rect.bottom > 300:
-        player_rect.bottom = 300
-    #out of bounds mechanic
-    if player_rect.x > 850:
-        player_rect.x = -100
-    #player_rect.x += 5
-    
-    #ENEMY1
-    screen.blit(snail_surf, snail_rect)
-    #enemy movement 
-    snail_rect.x -= 4
-    if snail_rect.x < -100:
-        snail_rect.x = 850
-    
+    if game_active:
+        screen.blit(back_surf, (0,0))
+        screen.blit(ground_surf, (0,300))
+        screen.blit(text_surf, (300, 30)) 
+        #screen.blit(score_surf, score_rect)
+        screen.blit(snail_surf, snail_rect)
+        display_score()
         
-  
+        #PLAYER
+        screen.blit(player_surf, player_rect) 
+        #gravity mechanic
+        player_gravity += 1
+        player_rect.y += player_gravity
+        if player_rect.bottom > 300:
+            player_rect.bottom = 300
+        #out of bounds mechanic
+        if player_rect.x > 850:
+            player_rect.x = -100
+        #player_rect.x += 5
         
-    
+        #ENEMY1
+        screen.blit(snail_surf, snail_rect)
+        #enemy movement 
+        snail_rect.x -= 4
+        if snail_rect.x < -100:
+            snail_rect.x = 850
+        
+        #Game end for collision
+        if snail_rect.colliderect(player_rect):
+            game_active = False
+    else:
+        screen.fill((94, 129, 162))
+        screen.blit(player_end, player_end_rect)
+        screen.blit(end_game_text, end_game_rect)
+        screen.blit(text_surf, (300, 30))
+        screen.blit(end_score_text, end_score_rect)
     pygame.display.update()
     clock.tick(60)
     
