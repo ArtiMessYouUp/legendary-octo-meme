@@ -8,18 +8,18 @@ class Player(pygame.sprite.Sprite):
     global player_surf
     def __init__(self):
         super().__init__()
-        player_walk_1 = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphicsDeluxe_Updated/Player/p1_stand.png').convert_alpha()
-        player_walk_2 = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphicsDeluxe_Updated/Player/p1_walk/PNG/p1_walk01.png').convert_alpha()
+        player_walk_1 = pygame.image.load('p1_stand.png').convert_alpha()
+        player_walk_2 = pygame.image.load('p1_walk01.png').convert_alpha()
         self.player_walk = [player_walk_1, player_walk_2]
         self.player_index = 0
-        self.player_jump =  pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphicsDeluxe_Updated/Player/p1_jump.png').convert_alpha()
+        self.player_jump =  pygame.image.load('p1_jump.png').convert_alpha()
         
         self.image = self.player_walk[self.player_index]
         self.rect = self.image.get_rect(midbottom = (80, 300))
         self.gravity = 0
         
-        self.jump_sound = pygame.mixer.Sound('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/cartoon-jump-6462.mp3')
-        self.jump_sound.set_volume(0.5)
+        self.jump_sound = pygame.mixer.Sound('cartoon-jump-6462.mp3')
+        self.jump_sound.set_volume(1)
         
     def player_input(self):
         keys = pygame.key.get_pressed()
@@ -41,7 +41,7 @@ class Player(pygame.sprite.Sprite):
             self.player_index += 0.1
             if self.player_index >= len(self.player_walk):
                 self.player_index = 0
-            self.image = player_walk[int(self.player_index)]
+            self.image = self.player_walk[int(self.player_index)]
                       
     def update(self):
         self.player_input()
@@ -53,17 +53,18 @@ class Obstacle(pygame.sprite.Sprite):
         super().__init__()
         
         if type == 'fly':
-            fly_frame_1 = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphicsDeluxe_Updated/Enemies/flyFly1.png').convert_alpha()
-            fly_frame_2 = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphicsDeluxe_Updated/Enemies/flyFly2.png').convert_alpha()
+            fly_frame_1 = pygame.image.load('flyFly1.png').convert_alpha()
+            fly_frame_2 = pygame.image.load('flyFly2.png').convert_alpha()
             self.frames = [fly_frame_1, fly_frame_2]
             y_pos = 200
         else:
-            snail_frame_1 = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphicsDeluxe_Updated/Enemies/snailWalk1.png').convert_alpha()
-            snail_frame_2 = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphicsDeluxe_Updated/Enemies/snailWalk2.png').convert_alpha()
+            snail_frame_1 = pygame.image.load('snailWalk1.png').convert_alpha()
+            snail_frame_2 = pygame.image.load('snailWalk2.png').convert_alpha()
             self.frames = [snail_frame_1, snail_frame_2]
             y_pos = 300
         
         self.animation_index = 0    
+        self.image = self.frames[self.animation_index]
         self.image = self.frames[self.animation_index]
         self.rect = self.image.get_rect(midbottom = (random.randint(900, 1100), y_pos))
        
@@ -89,56 +90,57 @@ def display_score():
     score_rect = score_surf.get_rect(topleft = (20, 10))
     screen.blit(score_surf, score_rect)
     return current_time
-    
-def obstacle_movement(obstacle_list):
-    if obstacle_list:
-        for obstacle_rect in obstacle_list:
-           obstacle_rect.x -= 5
-           
-           if obstacle_rect.bottom == 299:
-               screen.blit(snail_surf, obstacle_rect)
-            
-           else:
-               screen.blit(fly_surf, obstacle_rect)
-            
-        obstacle_list = [obstacle for obstacle in obstacle_list if obstacle.x > -100]    
-            
-        return obstacle_list
-    else:
-        return []
-
-def collisions(player, obstacles):
-    if obstacles:
-        for obstacle_rect in obstacles:
-            if player.colliderect(obstacle_rect):
-                return False
-    return True               
-
+             
 def collision_sprite():
     if pygame.sprite.spritecollide(player.sprite, obstacle_group, False):
         obstacle_group.empty()
         return False
     else:
         return True
-    
-def player_animation():
-    global player_surf, player_index
-    
-  
-         
+
+def timer():
+    global obstacle_timer
+    obstacle_timer = pygame.USEREVENT + 1
+    pygame.time.set_timer(obstacle_timer, 1500)  
+
+def end_game_screen():
+        player_end_surf = pygame.image.load('p1_front.png').convert_alpha()
+        player_end = pygame.transform.rotozoom(player_end_surf, 0, 2)
+        player_end_rect = player_end.get_rect(center = (400,200))
+        end_game_rect = end_game_text.get_rect(center = (400, 370))
+        
+        screen.fill((94, 129, 162)) 
+        screen.blit(player_end, player_end_rect)
+        screen.blit(end_game_text, end_game_rect)
+        screen.blit(text_surf, (300, 30))
+        #Reset player so on the ground 
+        player_gravity = 0
+        #shows ending score 
+        end_score_text = score_font.render(f'Your score {score}', False, 'Black')
+        end_score_rect = end_score_text.get_rect(center = (400, 330))
+        if score == 0:
+            screen.blit(end_game_text, end_game_rect)
+        else:
+            screen.blit(end_game_text, end_game_rect)
+            screen.blit(end_score_text, end_score_rect)
+        player = pygame.sprite.pygame.sprite.GroupSingle()
+        player.add(Player())
+
+        obstacle_group = pygame.sprite.Group()   
+        
 #Must call before running pygame code, it initializes pygame
 pygame.init() 
 #creating the display surface
 screen = pygame.display.set_mode((800, 400))
 pygame.display.set_caption('Runner')
 clock = pygame.time.Clock()
-title_font = pygame.font.Font('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/Font/pixle-font-collection/ugly-byte-53757/ugly.otf', 50)
-score_font = pygame.font.Font('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/Font/pixle-font-collection/ugly-byte-53757/ugly.otf', 30)
-game_active = False
+title_font = pygame.font.Font('ugly.otf', 50)
+score_font = pygame.font.Font('ugly.otf', 30)
+game_active = True
 start_time = 0
 score = 0
-bg_music = pygame.mixer.Sound('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/terror-ambience-7003.mp3')
-
+bg_music = pygame.mixer.Sound('terror-ambience-7003.mp3')
+bg_music.play()
 
 #Groups
 player = pygame.sprite.pygame.sprite.GroupSingle()
@@ -147,52 +149,13 @@ player.add(Player())
 obstacle_group = pygame.sprite.Group()
 
 #initializing surfaces
-back_surf = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphics_mushroomLand/Backgrounds/bg_desert.png').convert()
-ground_surf = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/Graphics/ground.png').convert()
+back_surf = pygame.image.load('bg_desert.png').convert()
+ground_surf = pygame.image.load('ground.png').convert()
 text_surf = title_font.render('Run Forest Run', False, 'Black')
 end_game_text = score_font.render('Hit Spacebar to Restart', False, 'Black')
 
-
-#Obstacles
-# snail
-snail_frame_1 = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphicsDeluxe_Updated/Enemies/snailWalk1.png').convert_alpha()
-snail_frame_2 = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphicsDeluxe_Updated/Enemies/snailWalk2.png').convert_alpha()
-snail_frames = [snail_frame_1, snail_frame_2]
-snail_frame_index = 0
-snail_surf = snail_frames[snail_frame_index]
-#snail_rect = snail_surf.get_rect(midbottom = (600 ,299))
-
-#fly
-fly_frame_1 = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphicsDeluxe_Updated/Enemies/flyFly1.png').convert_alpha()
-fly_frame_2 = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphicsDeluxe_Updated/Enemies/flyFly2.png').convert_alpha()
-fly_frames = [fly_frame_1, fly_frame_2]
-fly_frame_index = 0
-fly_surf = fly_frames[fly_frame_index]
-
-
-obstacle_rect_list = []
-
-
-#player sprite
-player_walk_1 = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphicsDeluxe_Updated/Player/p1_stand.png').convert_alpha()
-player_walk_2 = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphicsDeluxe_Updated/Player/p1_walk/PNG/p1_walk01.png').convert_alpha()
-player_walk = [player_walk_1, player_walk_2]
-player_index = 0
-player_jump =  pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphicsDeluxe_Updated/Player/p1_jump.png').convert_alpha()
-
-player_surf = player_walk[player_index]
-player_rect = player_surf.get_rect(midbottom = (80, 299))
-#end screen
-player_end_surf = pygame.image.load('/Users/bray/Library/CloudStorage/OneDrive-Personal/legendary-octo-meme/platformerGraphicsDeluxe_Updated/Player/p2_front.png').convert_alpha()
-player_end = pygame.transform.rotozoom(player_end_surf, 0, 2)
-player_end_rect = player_end.get_rect(center = (400,200))
-end_game_rect = end_game_text.get_rect(center = (400, 370))
-#player gravity
-player_gravity = 0
-
 #timer
-obstacle_timer = pygame.USEREVENT + 1
-pygame.time.set_timer(obstacle_timer, 1500)
+timer()
 
 snail_animation_timer = pygame.USEREVENT + 2
 pygame.time.set_timer(snail_animation_timer, 500)
@@ -205,41 +168,16 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quite
             exit()
-        #jump mechanic
-        if game_active:
-            bg_music.play()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if player_rect.collidepoint(event.pos) and player_rect.bottom >= 300:
-                    player_gravity = -20
-            
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and player_rect.bottom >= 300:
-                    player_gravity = -20
-        else:
+        
+        if game_active == False:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 game_active = True
-                #snail_rect.left = 800 
                 start_time = int(pygame.time.get_ticks() / 1000)
-        if game_active:        
+                
+        else:        
             if event.type == obstacle_timer:
-                obstacle_group.add(Obstacle(random.choice(['fly', 'snail', 'snail', 'snail'])))
-                # if random.randint(0, 2):
-                #     obstacle_rect_list.append(snail_surf.get_rect(midbottom = (random.randint(900, 1100) ,299)))
-                # else:
-                #     obstacle_rect_list.append(fly_surf.get_rect(midbottom = (random.randint(900, 1100) ,200)))
-            if event.type == snail_animation_timer:
-                if snail_frame_index == 0:
-                    snail_frame_index = 1
-                else:
-                    snail_frame_index = 0
-                snail_surf = snail_frames[snail_frame_index] 
-            if event.type == fly_animation_timer:
-                if fly_frame_index == 0:
-                    fly_frame_index = 1
-                else:
-                    fly_frame_index = 0  
-                fly_surf = fly_frames[fly_frame_index]  
-    #draw all the elements
+                obstacle_group.add(Obstacle(random.choice(['fly', 'snail', 'snail']))) 
+    
     #update everything
     if game_active:
         screen.blit(back_surf, (0,0))
@@ -248,45 +186,20 @@ while True:
         #screen.blit(snail_surf)
         score = display_score()
         
-        #PLAYER
-        # screen.blit(player_surf, player_rect) 
-        # #gravity mechanic
-        # player_gravity += 1
-        # player_animation()
-        # player_rect.y += player_gravity
-        # if player_rect.bottom > 300:
-        #     player_rect.bottom = 300
-        # #out of bounds mechanic
-        # if player_rect.x > 850:
-        #     player_rect.x = -100
         player.draw(screen)
         player.update()
         obstacle_group.draw(screen)
         obstacle_group.update() 
          
         game_active = collision_sprite()     
-        #obstacle movement
-        # obstacle_rect_list = obstacle_movement(obstacle_rect_list)
-        
-        # game_active = collisions(player_rect, obstacle_rect_list)
-        
-    
+
+    #End Game Screen 
     else:
-        screen.fill((94, 129, 162)) 
-        screen.blit(player_end, player_end_rect)
-        screen.blit(end_game_text, end_game_rect)
-        screen.blit(text_surf, (300, 30))
-        obstacle_rect_list.clear()
-        player_rect. midbottom = (80, 300)
-        player_gravity = 0
+        end_game_screen()
         
-        end_score_text = score_font.render(f'Your score {score}', False, 'Black')
-        end_score_rect = end_score_text.get_rect(center = (400, 330))
-        if score == 0:
-            screen.blit(end_game_text, end_game_rect)
-        else:
-            screen.blit(end_game_text, end_game_rect)
-            screen.blit(end_score_text, end_score_rect)
     pygame.display.update()
     clock.tick(60)
-    
+    #high score
+    #loop music
+    #dying sound
+    #ducking
